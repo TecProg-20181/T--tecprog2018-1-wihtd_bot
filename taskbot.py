@@ -11,11 +11,12 @@ import db
 from db import Task
 
 TOKENFILE = "botoken.txt"
-TOKENKEY = ''
 
-inFileTOKEN = open(TOKENFILE, 'r')
-TOKENKEY = inFileTOKEN.readline()
-URL = "https://api.telegram.org/bot{}/".format(TOKENKEY)
+def readBotoken(TOKENFILE):
+    TOKENKEY = ''
+    inFileTOKEN = open(TOKENFILE, 'r')
+    TOKENKEY = inFileTOKEN.readline()
+    return "https://api.telegram.org/bot{}/".format(TOKENKEY.rstrip())
 
 HELP = """
  /new NOME
@@ -30,6 +31,8 @@ HELP = """
  /priority ID PRIORITY{low, medium, high}
  /help
 """
+
+URL = readBotoken(TOKENFILE)
 
 def get_url(url):
     response = requests.get(url)
@@ -362,4 +365,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
