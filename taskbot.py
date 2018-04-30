@@ -37,19 +37,26 @@ HELP = """
 """
 
 URL = readBotoken(TOKENFILE)
-#retorna informação do token
+
+def handling_exception(msg,task_id,chat):
+    query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+    try:
+        task = query.one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        send_message("_404_ Task {} not found x.x".format(task_id), chat)
+        return 1
+    return task
+
 def get_url(url):
-    #pega o url
     response = requests.get(url)
     content = response.content.decode("utf8")
     return content
-#retorna json
+
 def get_json_from_url(url):
     content = get_url(url)
-    #decodifica o json
     js = json.loads(content)
     return js
-#retorn json
+
 def get_updates(offset=None):
     url = URL + "getUpdates?timeout=100"
     if offset:
@@ -165,15 +172,6 @@ def delete(msg, chat):
                 db.session.delete(task)
                 db.session.commit()
                 send_message("Task [[{}]] deleted".format(task_id), chat)
-
-def handling_exception(msg,task_id,chat):
-    query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-    try:
-        task = query.one()
-    except sqlalchemy.orm.exc.NoResultFound:
-        send_message("_404_ Task {} not found x.x".format(task_id), chat)
-        return 1
-    return task
 
 def todo(msg, chat):
             if not msg.isdigit():
