@@ -38,6 +38,15 @@ HELP = """
 
 URL = readBotoken(TOKENFILE)
 
+def handling_exception(msg,task_id,chat):
+    query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+    try:
+        task = query.one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        send_message("_404_ Task {} not found x.x".format(task_id), chat)
+        return 1
+    return task
+
 def get_url(url):
     response = requests.get(url)
     content = response.content.decode("utf8")
@@ -111,11 +120,8 @@ def rename(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
 
                 if text == '':
@@ -132,12 +138,10 @@ def duplicate(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
+
 
                 dtask = Task(chat=task.chat, name=task.name, status=task.status, dependencies=task.dependencies,
                              parents=task.parents, priority=task.priority, duedate=task.duedate)
@@ -156,16 +160,15 @@ def delete(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
+
                 for t in task.dependencies.split(',')[:-1]:
                     qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
                     t = qy.one()
                     t.parents = t.parents.replace('{},'.format(task.id), '')
+
                 db.session.delete(task)
                 db.session.commit()
                 send_message("Task [[{}]] deleted".format(task_id), chat)
@@ -175,12 +178,10 @@ def todo(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
+ 
                 task.status = 'TODO'
                 db.session.commit()
                 send_message("*TODO* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
@@ -190,12 +191,10 @@ def doing(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
+
                 task.status = 'DOING'
                 db.session.commit()
                 send_message("*DOING* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
@@ -205,12 +204,10 @@ def done(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
+                
                 task.status = 'DONE'
                 db.session.commit()
                 send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
@@ -260,11 +257,8 @@ def dependson(msg, chat):
                 send_message("You must inform the task id", chat)
             else:
                 task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                task = handling_exception(msg,task_id,chat)
+                if task == 1:
                     return
 
                 if text == '':
