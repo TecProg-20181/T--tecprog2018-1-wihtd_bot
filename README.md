@@ -1,15 +1,19 @@
 # Taskbot
 
-## Começando a mexer no seu bot
-- Seguir o tutorial de criação de bots [BotFather](https://core.telegram.org/bots#6-botfather)
-- Adicionar o TOKEN no local indicado no código
-- Cada grupo deve me enviar o TOKEN através do formulário disponibilizado no moodle
+## Time
 
-# Issues
-- As issues cadastradas são de novas features, bugs e requisitos de segurança
-- Cada grupo deve resolver todas as [issues deste repositório](https://github.com/TecProg-20181/Taskbot)
+**INTEGRANTES** </p>
 
-## Refatorando
-- As oportunidades de refatoração que a equipe encontrar, deve ser cadastrada
-em forma de issue no repositório do time
+Nome|GitHub
+-|-
+João Lucas | @jlucassr
+João Victor | @ritzare
+Luciano Santos | @lucianosz7
+Matheus Filipe| @MatheusFilipe95
 
+
+## Refatoração
+
+  A refatoração do trabalho foi definida pelas técnicas de programação apresentadas da disciplina. Normas e ações de refatoração foram elaboradas e para melhor desempenho e qualidade do software. </p>
+
+  Com isso, o grupo trabalhou em sua refatoração de modo legível e coerente, levando em conta o trabalho sendo dividido em duas apresentações, alterações e modificações futuras serão feitas.
