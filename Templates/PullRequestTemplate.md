@@ -1,4 +1,4 @@
-US X -Título da Issue
+# US X -Título da Issue
 
 ## Descrição - _<O que este Pull Request faz?>_
 Pequena descrição sobre quais arquivos foram alterados e o porque de cada alteração.
