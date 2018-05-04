@@ -28,7 +28,6 @@ HELP = """
  /rename ID NOME
  /dependson ID ID...
  /duplicate ID
- /viewpriority
  /priority ID PRIORITY{low, medium, high}
  low priority = \U0001F535
  medium priority = \U0001F315
@@ -93,10 +92,10 @@ def deps_text(task, chat, preceed=''):
             icon = '\U00002611'
 
         if i + 1 == len(task.dependencies.split(',')[:-1]):
-            line += '└── [[{}]] {} {}\n'.format(dep.id, icon, dep.name)
+            line += '└── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
             line += deps_text(dep, chat, preceed + '    ')
         else:
-            line += '├── [[{}]] {} {}\n'.format(dep.id, icon, dep.name)
+            line += '├── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
             line += deps_text(dep, chat, preceed + '│   ')
 
         text += line
@@ -181,7 +180,7 @@ def todo(msg, chat):
                 task = handling_exception(msg,task_id,chat)
                 if task == 1:
                     return
- 
+
                 task.status = 'TODO'
                 db.session.commit()
                 send_message("*TODO* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
@@ -207,7 +206,7 @@ def done(msg, chat):
                 task = handling_exception(msg,task_id,chat)
                 if task == 1:
                     return
-                
+
                 task.status = 'DONE'
                 db.session.commit()
                 send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
