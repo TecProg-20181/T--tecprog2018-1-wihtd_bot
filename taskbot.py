@@ -157,6 +157,11 @@ def delete(msg, chat):
                 if task == 1:
                     return
 
+            if task.parents != '':
+                send_message("Cannot delete a dependent based task", chat)
+                return
+
+            else:
                 for t in task.dependencies.split(',')[:-1]:
                     qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
                     t = qy.one()
