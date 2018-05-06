@@ -101,13 +101,14 @@ def new(msg, chat):
     db.session.commit()
     send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
 
-def rename(msg, chat):
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
+def msgsplit(text, msg):
+        if msg != '':
+            if len(msg.split(' ', 1)) > 1:
+                text = msg.split(' ', 1)[1]
+            msg = msg.split(' ', 1)[0]
+        return text, msg
 
+def rename(text, msg, chat):
             if not msg.isdigit():
                 send_message("You must inform the task id", chat)
             else:
@@ -204,7 +205,7 @@ def done(msg, chat):
                 db.session.commit()
                 send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
 
-def listi(msg, chat):
+def list(msg, chat):
             a = ''
 
             a += '\U0001F4CB Task List\n'
@@ -238,13 +239,7 @@ def listi(msg, chat):
 
             send_message(a, chat)
 
-def dependson(msg, chat):
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
-
+def dependson(text, msg, chat):
             if not msg.isdigit():
                 send_message("You must inform the task id", chat)
             else:
@@ -283,13 +278,7 @@ def dependson(msg, chat):
                 db.session.commit()
                 send_message("Task {} dependencies up to date".format(task_id), chat)
 
-def priority(msg, chat):
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
-
+def priority(text, msg, chat):
             if not msg.isdigit():
                 send_message("You must inform the task id", chat)
             else:
@@ -345,7 +334,9 @@ def handle_updates(updates):
             new(msg, chat)
 
         elif command == '/rename':
-            rename(msg,chat)
+            text = ''
+            text, msg = msgsplit(text, msg)
+            rename(text, msg, chat)
 
         elif command == '/duplicate':
             duplicate(msg, chat)
@@ -363,13 +354,17 @@ def handle_updates(updates):
            done(msg, chat)
 
         elif command == '/list':
-            listi(msg, chat)
+            list(msg, chat)
 
         elif command == '/dependson':
-            dependson(msg, chat)
+            text = ''
+            text, msg = msgsplit(text, msg)
+            dependson(text, msg, chat)
 
         elif command == '/priority':
-            priority(msg, chat)
+            text = ''
+            text, msg = msgsplit(text, msg)
+            priority(text, msg, chat)
 
         elif command == '/start':
             start(chat)
