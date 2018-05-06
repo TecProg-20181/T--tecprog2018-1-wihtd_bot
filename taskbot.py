@@ -4,19 +4,12 @@ import json
 import requests
 import time
 import urllib
+from Classes.token import Token
 
 import sqlalchemy
 
 import db
 from db import Task
-
-TOKENFILE = "botoken.txt"
-
-def readBotoken(TOKENFILE):
-    TOKENKEY = ''
-    inFileTOKEN = open(TOKENFILE, 'r')
-    TOKENKEY = inFileTOKEN.readline()
-    return "https://api.telegram.org/bot{}/".format(TOKENKEY.rstrip())
 
 HELP = """
  /new NOME
@@ -35,7 +28,7 @@ HELP = """
  /help
 """
 
-URL = readBotoken(TOKENFILE)
+URL = Token().getBotoken()
 
 def handling_exception(msg,task_id,chat):
     query = db.session.query(Task).filter_by(id=task_id, chat=chat)
