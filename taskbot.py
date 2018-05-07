@@ -6,6 +6,7 @@ import time
 import urllib
 from Classes.token import Token
 from Classes.initialize import Initialize
+from Classes.operation import Operation
 
 import sqlalchemy
 
@@ -30,6 +31,7 @@ HELP = """
 """
 
 Initialization = Initialize()
+Operation = Operation()
 
 def handling_exception(msg,task_id,chat):
     query = db.session.query(Task).filter_by(id=task_id, chat=chat)
@@ -71,12 +73,6 @@ def deps_text(task, chat, preceed=''):
         text += line
 
     return text
-
-def new(msg, chat):
-    task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
-    db.session.add(task)
-    db.session.commit()
-    Initialization.send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
 
 def msgsplit(text, msg):
         if msg != '':
@@ -313,7 +309,7 @@ def handle_updates(updates):
         print(command, msg, chat)
 
         if command == '/new':
-            new(msg, chat)
+            Operation.new(msg, chat)
 
         elif command == '/rename':
             text = ''
