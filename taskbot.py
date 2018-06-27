@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import json
 import requests
 import time
@@ -32,6 +33,7 @@ HELP = """
 
 Initialization = Initialize()
 Operation = Operation()
+
 
 def handling_exception(msg,task_id,chat):
     query = db.session.query(Task).filter_by(id=task_id, chat=chat)
