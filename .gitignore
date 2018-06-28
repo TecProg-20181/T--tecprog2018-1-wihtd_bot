@@ -1,5 +1,7 @@
 db.sqlite3
 
+.gitignore
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -9,7 +11,8 @@ __pycache__/
 #TOKEN
 botoken.txt
 
-.gitignore
+#GITHUBLOGIN
+githublogin.txt
 
 # C extensions
 *.so
