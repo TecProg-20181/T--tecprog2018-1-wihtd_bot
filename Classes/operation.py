@@ -56,7 +56,7 @@ class Operation():
         db.session.add(self.task)
         db.session.commit()
         Initialization.send_message("New task *TODO* [[{}]] {}".format(self.task.id, self.task.name), chat)
-        self.githubIssue_create(self.task.name)
+        #self.githubIssue_create(self.task.name)
 
     def rename(self, text, msg, chat):
         if not msg.isdigit():
@@ -148,9 +148,9 @@ class Operation():
     def deps_text(self, task, chat, preceed=''):
         text = ''
 
-        for i in range(len(self.task.dependencies.split(',')[:-1])):
+        for i in range(len(task.dependencies.split(',')[:-1])):
             line = preceed
-            query = db.session.query(Task).filter_by(id=int(self.task.dependencies.split(',')[:-1][i]), chat=chat)
+            query = db.session.query(Task).filter_by(id=int(task.dependencies.split(',')[:-1][i]), chat=chat)
             dep = query.one()
 
             icon = '\U0001F195'
