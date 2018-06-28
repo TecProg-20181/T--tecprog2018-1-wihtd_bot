@@ -4,6 +4,7 @@ import sqlalchemy
 
 import db
 from db import Task
+from contracts import contract, newContract
 import os
 import json
 import requests
@@ -30,6 +31,7 @@ class Operation():
                 self.Initialization.send_message("Here is a list of things you can do.", chat)
                 self.Initialization.send_message(Initialization.help, chat)
 
+    @contract(msg='str, !None', task_id='int, !None', chat='int, !None')
     def handling_exception(self, msg, task_id, chat):
         query = db.session.query(Task).filter_by(id=task_id, chat=chat)
         try:
@@ -39,6 +41,7 @@ class Operation():
             return 1
         return self.task
 
+    @contract(title='str, !None')
     def githubIssue_create(self, title):
         url = 'https://api.github.com/repos/TecProg-20181/T--tecprog2018-1-wihtd_bot/issues'
         # Create an authenticated session to create the issue
@@ -50,7 +53,7 @@ class Operation():
         # Add the issue to our repository
         r = session.post(url, json.dumps(issue))
 
-
+    @contract(msg='str, !None', chat='int, !None')
     def new(self, msg, chat):
         self.task = Task(chat=chat, name=msg, status='TODO', dependencies='', parents='', priority='')
         db.session.add(self.task)
@@ -58,6 +61,7 @@ class Operation():
         Initialization.send_message("New task *TODO* [[{}]] {}".format(self.task.id, self.task.name), chat)
         self.githubIssue_create(self.task.name)
 
+    @contract(msg='str, !None', chat='int, !None')
     def rename(self, text, msg, chat):
         if not msg.isdigit():
             Initialization.send_message("You must inform the task id", chat)
@@ -76,6 +80,7 @@ class Operation():
             db.session.commit()
             Initialization.send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
 
+    @contract(text='str', msg='str, !None', chat='int, !None')
     def dependson(self, text, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -115,6 +120,7 @@ class Operation():
                     db.session.commit()
                     Initialization.send_message("Task {} dependencies up to date".format(task_id), chat)
 
+    @contract(msg='str, !None', chat='int, !None')
     def delete(self, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -139,6 +145,7 @@ class Operation():
                 db.session.commit()
                 Initialization.send_message("Task [[{}]] deleted".format(task_id), chat)
 
+    @contract(msg='str, !None', chat='int, !None')
     def todo(self, msg, chat):
         for task_id in msg.split(' '):
             if not task_id.isdigit():
@@ -154,6 +161,7 @@ class Operation():
             db.session.commit()
             Initialization.send_message("*TODO* task [[{}]] {} {}".format(self.task.id, self.task.name, self.task.priority), chat)
 
+    @contract(msg='str, !None', chat='int, !None')
     def doing(self, msg, chat):
         for task_id in msg.split(' '):
             if not task_id.isdigit():
@@ -169,6 +177,7 @@ class Operation():
             db.session.commit()
             Initialization.send_message("*DOING* task [[{}]] {} {}".format(self.task.id, self.task.name, self.task.priority), chat)
 
+    @contract(msg='str, !None', chat='int, !None')
     def done(self, msg, chat):
         for task_id in msg.split(' '):
             if not task_id.isdigit():
@@ -184,6 +193,9 @@ class Operation():
             db.session.commit()
             Initialization.send_message("*DONE* task [[{}]] {} {}".format(self.task.id, self.task.name, self.task.priority), chat)
 
+    newContract('validTask', lambda chat: isintance(chat, Task))
+
+    @contract(task='validTask, !None', chat='int, !None')
     def deps_text(self, task, chat, preceed=''):
         text = ''
 
@@ -209,6 +221,7 @@ class Operation():
 
         return text
 
+    @contract(text='str', msg='str, !None', chat='int, !None')
     def priority(self, text, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -235,6 +248,7 @@ class Operation():
                             Initialization.send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
                     db.session.commit()
 
+    @contract(msg='str, !None', chat='int, !None')
     def duplicate(self, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -257,6 +271,7 @@ class Operation():
                     db.session.commit()
                     Initialization.send_message("New task *TODO* [[{}]] {} {}".format(self.dtask.id, self.dtask.name, self.dtask.priority), chat)
 
+    @contract(msg='str, !None', chat='int, !None')
     def list(self, msg, chat):
                 a = ''
 
