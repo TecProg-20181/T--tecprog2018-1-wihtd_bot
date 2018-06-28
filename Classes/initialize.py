@@ -3,6 +3,7 @@ import requests
 import time
 import urllib
 from Classes.token import Token
+from contracts import contract
 
 URL = Token().getBotoken()
 
@@ -30,11 +31,13 @@ class Initialize:
          /help
         """
 
+    @contract(url='str, !None', returns='str, !None')
     def get_url(self, url):
         self.response = requests.get(url)
         self.content = self.response.content.decode("utf8")
         return self.content
 
+    @contract(url='str, !None', returns='dict, !None')
     def get_json_from_url(self, url):
         self.content = self.get_url(url)
         self.js = json.loads(self.content)
@@ -47,6 +50,7 @@ class Initialize:
         self.js = self.get_json_from_url(self.url)
         return self.js
 
+    @contract(updates='dict, !None', returns='int, !None')
     def get_last_update_id(self, updates):
         update_ids = []
         for update in updates["result"]:
@@ -54,6 +58,7 @@ class Initialize:
 
         return max(update_ids)
 
+    @contract(text='str, !None', chat_id='int')
     def send_message(self, text, chat_id, reply_markup=None):
         text = urllib.parse.quote_plus(text)
         self.url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
