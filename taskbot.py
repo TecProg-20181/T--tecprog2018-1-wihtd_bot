@@ -51,179 +51,12 @@ def get_last_update_id(updates):
 
     return max(update_ids)
 
-def deps_text(task, chat, preceed=''):
-    text = ''
-
-    for i in range(len(task.dependencies.split(',')[:-1])):
-        line = preceed
-        query = db.session.query(Task).filter_by(id=int(task.dependencies.split(',')[:-1][i]), chat=chat)
-        dep = query.one()
-
-        icon = '\U0001F195'
-        if dep.status == 'DOING':
-            icon = '\U000023FA'
-        elif dep.status == 'DONE':
-            icon = '\U00002611'
-
-        if i + 1 == len(task.dependencies.split(',')[:-1]):
-            line += '└── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
-            line += deps_text(dep, chat, preceed + '    ')
-        else:
-            line += '├── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
-            line += deps_text(dep, chat, preceed + '│   ')
-
-        text += line
-
-    return text
-
 def msgsplit(text, msg):
         if msg != '':
             if len(msg.split(' ', 1)) > 1:
                 text = msg.split(' ', 1)[1]
             msg = msg.split(' ', 1)[0]
         return text, msg
-
-def rename(text, msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
-
-                if text == '':
-                    Initialization.send_message("You want to modify task {}, but you didn't provide any new text".format(task_id), chat)
-                    return
-
-                old_text = task.name
-                task.name = text
-                db.session.commit()
-                Initialization.send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
-
-def duplicate(msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
-
-
-                dtask = Task(chat=task.chat, name=task.name, status=task.status, dependencies=task.dependencies,
-                             parents=task.parents, priority=task.priority, duedate=task.duedate)
-                db.session.add(dtask)
-
-                for t in task.dependencies.split(',')[:-1]:
-                    qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
-                    t = qy.one()
-                    t.parents += '{},'.format(dtask.id)
-
-                db.session.commit()
-                Initialization.send_message("New task *TODO* [[{}]] {} {}".format(dtask.id, dtask.name, dtask.priority), chat)
-
-def delete(msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
-
-            if task.parents != '':
-                Initialization.send_message("Cannot delete a dependent based task", chat)
-                return
-
-            else:
-                for t in task.dependencies.split(',')[:-1]:
-                    qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
-                    t = qy.one()
-                    t.parents = t.parents.replace('{},'.format(task.id), '')
-
-                db.session.delete(task)
-                db.session.commit()
-                Initialization.send_message("Task [[{}]] deleted".format(task_id), chat)
-
-def todo(msg, chat):
-    for task_id in msg.split(' '):
-        if not task_id.isdigit():
-            Initialization.send_message("You must inform the task id", chat)
-        else:
-            msg2 = msg.split()
-            task_id = int(task_id)
-            task = handling_exception(msg, task_id, chat)
-            if task == 1:
-                return
-
-        task.status = 'TODO'
-        db.session.commit()
-        Initialization.send_message("*TODO* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
-
-def doing(msg, chat):
-    for task_id in msg.split(' '):
-        if not task_id.isdigit():
-            Initialization.send_message("You must inform the task id", chat)
-        else:
-            msg2 = msg.split()
-            task_id = int(task_id)
-            task = handling_exception(msg, task_id, chat)
-            if task == 1:
-                return
-
-        task.status = 'DOING'
-        db.session.commit()
-        Initialization.send_message("*DOING* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
-
-def done(msg, chat):
-    for task_id in msg.split(' '):
-        if not task_id.isdigit():
-            Initialization.send_message("You must inform the task id", chat)
-        else:
-            msg2 = msg.split()
-            task_id = int(task_id)
-            task = handling_exception(msg, task_id, chat)
-            if task == 1:
-                return
-
-        task.status = 'DONE'
-        db.session.commit()
-        Initialization.send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
-
-def list(msg, chat):
-            a = ''
-
-            a += '\U0001F4CB Task List\n'
-            query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
-            for task in query.all():
-                icon = '\U0001F195'
-                if task.status == 'DOING':
-                    icon = '\U000023FA'
-                elif task.status == 'DONE':
-                    icon = '\U00002611'
-
-                a += '[[{}]] {} {} {}\n'.format(task.id, icon, task.name, task.priority)
-                a += deps_text(task, chat)
-
-            Initialization.send_message(a, chat)
-            a = ''
-
-            a += '\U0001F4DD _Status_\n'
-            query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
-            a += '\n\U0001F195 *TODO*\n'
-            for task in query.all():
-                a += '[[{}]] {} {}\n'.format(task.id, task.name, task.priority)
-            query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
-            a += '\n\U000023FA *DOING*\n'
-            for task in query.all():
-                a += '[[{}]] {} {}\n'.format(task.id, task.name, task.priority)
-            query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
-            a += '\n\U00002611 *DONE*\n'
-            for task in query.all():
-                a += '[[{}]] {} {}\n'.format(task.id, task.name, task.priority)
-
-            Initialization.send_message(a, chat)
 
 def dependson(text, msg, chat):
             if not msg.isdigit():
@@ -322,25 +155,25 @@ def handle_updates(updates):
         elif command == '/rename':
             text = ''
             text, msg = msgsplit(text, msg)
-            rename(text, msg, chat)
+            Operation.rename(text, msg, chat)
 
         elif command == '/duplicate':
-            duplicate(msg, chat)
+            Operation.duplicate(msg, chat)
 
         elif command == '/delete':
-            delete(msg, chat)
+            Operation.delete(msg, chat)
 
         elif command == '/todo':
-            todo(msg, chat)
+            Operation.todo(msg, chat)
 
         elif command == '/doing':
-            doing(msg, chat)
+            Operation.doing(msg, chat)
 
         elif command == '/done':
-           done(msg, chat)
+            Operation.done(msg, chat)
 
         elif command == '/list':
-            list(msg, chat)
+            Operation.list(msg, chat)
 
         elif command == '/dependson':
             text = ''
