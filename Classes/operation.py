@@ -56,7 +56,7 @@ class Operation():
         db.session.add(self.task)
         db.session.commit()
         Initialization.send_message("New task *TODO* [[{}]] {}".format(self.task.id, self.task.name), chat)
-        #self.githubIssue_create(self.task.name)
+        self.githubIssue_create(self.task.name)
 
     def rename(self, text, msg, chat):
         if not msg.isdigit():
@@ -75,6 +75,45 @@ class Operation():
             self.task.name = text
             db.session.commit()
             Initialization.send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
+
+    def dependson(self, text, msg, chat):
+                if not msg.isdigit():
+                    Initialization.send_message("You must inform the task id", chat)
+                else:
+                    task_id = int(msg)
+                    self.task = self.handling_exception(msg,task_id,chat)
+                    if self.task == 1:
+                        return
+
+                    if text == '':
+                        for i in self.task.dependencies.split(',')[:-1]:
+                            i = int(i)
+                            q = db.session.query(Task).filter_by(id=i, chat=chat)
+                            t = q.one()
+                            t.parents = t.parents.replace('{},'.format(self.task.id), '')
+
+                        self.task.dependencies = ''
+                        Initialization.send_message("Dependencies removed from task {}".format(task_id), chat)
+                    else:
+                        for depid in text.split(' '):
+                            if not depid.isdigit():
+                                Initialization.send_message("All dependencies ids must be numeric, and not {}".format(depid), chat)
+                            else:
+                                depid = int(depid)
+                                query = db.session.query(Task).filter_by(id=depid, chat=chat)
+                                try:
+                                    taskdep = query.one()
+                                    taskdep.parents += str(self.task.id) + ','
+                                except sqlalchemy.orm.exc.NoResultFound:
+                                    Initialization.send_message("_404_ Task {} not found x.x".format(depid), chat)
+                                    continue
+
+                                deplist = self.task.dependencies.split(',')
+                                if str(depid) not in deplist:
+                                    self.task.dependencies += str(depid) + ','
+
+                    db.session.commit()
+                    Initialization.send_message("Task {} dependencies up to date".format(task_id), chat)
 
     def delete(self, msg, chat):
                 if not msg.isdigit():

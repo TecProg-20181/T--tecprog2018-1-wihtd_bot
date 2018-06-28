@@ -47,6 +47,13 @@ class Initialize:
         self.js = self.get_json_from_url(self.url)
         return self.js
 
+    def get_last_update_id(self, updates):
+        update_ids = []
+        for update in updates["result"]:
+            update_ids.append(int(update["update_id"]))
+
+        return max(update_ids)
+
     def send_message(self, text, chat_id, reply_markup=None):
         text = urllib.parse.quote_plus(text)
         self.url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
