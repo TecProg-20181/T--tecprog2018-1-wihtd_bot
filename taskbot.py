@@ -14,22 +14,6 @@ import sqlalchemy
 import db
 from db import Task
 
-HELP = """
- /new NOME
- /todo ID
- /doing ID
- /done ID
- /delete ID
- /list
- /rename ID NOME
- /dependson ID ID...
- /duplicate ID
- /priority ID PRIORITY{low, medium, high}
- low priority = \U0001F535
- medium priority = \U0001F315
- high priority = \U0001F534
- /help
-"""
 
 Initialization = Initialize()
 Operation = Operation()
@@ -97,39 +81,6 @@ def dependson(text, msg, chat):
                 db.session.commit()
                 Initialization.send_message("Task {} dependencies up to date".format(task_id), chat)
 
-def priority(text, msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
-
-                if text == '':
-                    task.priority = ''
-                    Initialization.send_message("_Cleared_ all priorities from task {}".format(task_id), chat)
-                else:
-                    if text.lower() not in ['high', 'medium', 'low']:
-                        Initialization.send_message("The priority *must be* one of the following: high, medium, low", chat)
-                    else:
-                        if text.lower() == 'low':
-                            task.priority = '\U0001F535'
-                        elif text.lower() == 'medium':
-                            task.priority = '\U0001F315'
-                        else:
-                            task.priority = '\U0001F534'
-
-                        Initialization.send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
-                db.session.commit()
-def start(chat):
-            Initialization.send_message("Welcome! Here is a list of things you can do.", chat)
-            Initialization.send_message(HELP, chat)
-
-def help(chat):
-            Initialization.send_message("Here is a list of things you can do.", chat)
-            Initialization.send_message(HELP, chat)
-
 def handle_updates(updates):
     for update in updates["result"]:
         if 'message' in update:
@@ -183,13 +134,13 @@ def handle_updates(updates):
         elif command == '/priority':
             text = ''
             text, msg = msgsplit(text, msg)
-            priority(text, msg, chat)
+            Operation.priority(text, msg, chat)
 
         elif command == '/start':
-            start(chat)
+            Operation.start(chat)
 
         elif command == '/help':
-            help(chat)
+            Operation.help(chat)
 
         else:
             Initialization.send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
