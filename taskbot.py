@@ -147,43 +147,49 @@ def delete(msg, chat):
                 Initialization.send_message("Task [[{}]] deleted".format(task_id), chat)
 
 def todo(msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
+    for task_id in msg.split(' '):
+        if not task_id.isdigit():
+            Initialization.send_message("You must inform the task id", chat)
+        else:
+            msg2 = msg.split()
+            task_id = int(task_id)
+            task = handling_exception(msg, task_id, chat)
+            if task == 1:
+                return
 
-                task.status = 'TODO'
-                db.session.commit()
-                Initialization.send_message("*TODO* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
+        task.status = 'TODO'
+        db.session.commit()
+        Initialization.send_message("*TODO* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
 
 def doing(msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
+    for task_id in msg.split(' '):
+        if not task_id.isdigit():
+            Initialization.send_message("You must inform the task id", chat)
+        else:
+            msg2 = msg.split()
+            task_id = int(task_id)
+            task = handling_exception(msg, task_id, chat)
+            if task == 1:
+                return
 
-                task.status = 'DOING'
-                db.session.commit()
-                Initialization.send_message("*DOING* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
+        task.status = 'DOING'
+        db.session.commit()
+        Initialization.send_message("*DOING* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
 
 def done(msg, chat):
-            if not msg.isdigit():
-                Initialization.send_message("You must inform the task id", chat)
-            else:
-                task_id = int(msg)
-                task = handling_exception(msg,task_id,chat)
-                if task == 1:
-                    return
+    for task_id in msg.split(' '):
+        if not task_id.isdigit():
+            Initialization.send_message("You must inform the task id", chat)
+        else:
+            msg2 = msg.split()
+            task_id = int(task_id)
+            task = handling_exception(msg, task_id, chat)
+            if task == 1:
+                return
 
-                task.status = 'DONE'
-                db.session.commit()
-                Initialization.send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
+        task.status = 'DONE'
+        db.session.commit()
+        Initialization.send_message("*DONE* task [[{}]] {} {}".format(task.id, task.name, task.priority), chat)
 
 def list(msg, chat):
             a = ''
