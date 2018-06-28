@@ -8,6 +8,7 @@ import os
 import json
 import requests
 
+
 Initialization = Initialize()
 
 githublogin = "githublogin.txt"
@@ -21,6 +22,14 @@ class Operation():
         self.dtask = ''
         self.Initialization = Initialize()
 
+    def start(self, chat):
+                self.Initialization.send_message("Welcome! Here is a list of things you can do.", chat)
+                self.Initialization.send_message(Initialization.help, chat)
+
+    def help(self, chat):
+                self.Initialization.send_message("Here is a list of things you can do.", chat)
+                self.Initialization.send_message(Initialization.help, chat)
+
     def handling_exception(self, msg, task_id, chat):
         query = db.session.query(Task).filter_by(id=task_id, chat=chat)
         try:
@@ -30,7 +39,7 @@ class Operation():
             return 1
         return self.task
 
-    def make_github_issue(self, title):
+    def githubIssue_create(self, title):
         url = 'https://api.github.com/repos/TecProg-20181/T--tecprog2018-1-wihtd_bot/issues'
         # Create an authenticated session to create the issue
         session = requests.Session()
@@ -47,7 +56,7 @@ class Operation():
         db.session.add(self.task)
         db.session.commit()
         Initialization.send_message("New task *TODO* [[{}]] {}".format(self.task.id, self.task.name), chat)
-        self.make_github_issue(self.task.name)
+        self.githubIssue_create(self.task.name)
 
     def rename(self, text, msg, chat):
         if not msg.isdigit():
@@ -85,7 +94,7 @@ class Operation():
                     for t in self.task.dependencies.split(',')[:-1]:
                         qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
                         t = qy.one()
-                        t.parents = t.parents.replace('{},'.format(task.id), '')
+                        t.parents = t.parents.replace('{},'.format(self.task.id), '')
 
                 db.session.delete(self.task)
                 db.session.commit()
@@ -161,6 +170,32 @@ class Operation():
 
         return text
 
+    def priority(self, text, msg, chat):
+                if not msg.isdigit():
+                    Initialization.send_message("You must inform the task id", chat)
+                else:
+                    task_id = int(msg)
+                    self.task = self.handling_exception(msg,task_id,chat)
+                    if self.task == 1:
+                        return
+
+                    if text == '':
+                        self.task.priority = ''
+                        Initialization.send_message("_Cleared_ all priorities from task {}".format(task_id), chat)
+                    else:
+                        if text.lower() not in ['high', 'medium', 'low']:
+                            Initialization.send_message("The priority *must be* one of the following: high, medium, low", chat)
+                        else:
+                            if text.lower() == 'low':
+                                self.task.priority = '\U0001F535'
+                            elif text.lower() == 'medium':
+                                self.task.priority = '\U0001F315'
+                            else:
+                                self.task.priority = '\U0001F534'
+
+                            Initialization.send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
+                    db.session.commit()
+
     def duplicate(self, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -216,3 +251,4 @@ class Operation():
                     a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
 
                 Initialization.send_message(a, chat)
+                return

@@ -13,6 +13,22 @@ class Initialize:
         self.url = None
         self.response = None
         self.js = None
+        self.help = """
+         /new NOME
+         /todo ID
+         /doing ID
+         /done ID
+         /delete ID
+         /list
+         /rename ID NOME
+         /dependson ID ID...
+         /duplicate ID
+         /priority ID PRIORITY{low, medium, high}
+         low priority = \U0001F535
+         medium priority = \U0001F315
+         high priority = \U0001F534
+         /help
+        """
 
     def get_url(self, url):
         self.response = requests.get(url)
