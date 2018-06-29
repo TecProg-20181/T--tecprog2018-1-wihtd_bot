@@ -47,6 +47,11 @@ def handle_updates(updates):
         if command == '/new':
             Operation.new(msg, chat)
 
+        elif command == '/senddate':
+            text = ''
+            text, msg = msgsplit(text, msg)
+            Operation.senddate(text, msg, chat)
+
         elif command == '/rename':
             text = ''
             text, msg = msgsplit(text, msg)

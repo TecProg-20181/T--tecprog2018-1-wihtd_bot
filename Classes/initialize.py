@@ -2,6 +2,7 @@ import json
 import requests
 import time
 import urllib
+from datetime import datetime
 from Classes.token import Token
 
 URL = Token().getBotoken()
@@ -14,12 +15,13 @@ class Initialize:
         self.response = None
         self.js = None
         self.help = """
-         /new NOME
+            /new NOME
          /todo ID
          /doing ID
          /done ID
          /delete ID
          /list
+         /senddate ID DATE
          /rename ID NOME
          /dependson ID ID...
          /duplicate ID

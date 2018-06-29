@@ -1,4 +1,5 @@
 from Classes.initialize import Initialize
+from datetime import datetime
 
 import sqlalchemy
 
@@ -199,10 +200,16 @@ class Operation():
                 icon = '\U00002611'
 
             if i + 1 == len(self.task.dependencies.split(',')[:-1]):
-                line += '└── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
+                if self.task.duedate == None:
+                    line += '└── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
+                else:
+                    line += '└── [[{}]] {} {} {} *Send date:* {}\n'.format(dep.id, icon, dep.name, dep.priority, dep.duedate)
                 line += self.deps_text(dep, chat, preceed + '    ')
             else:
-                line += '├── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
+                if self.task.duedate == None:
+                    line += '├── [[{}]] {} {} {}\n'.format(dep.id, icon, dep.name, dep.priority)
+                else:
+                    line += '├── [[{}]] {} {} {} *Send date:* {}\n'.format(dep.id, icon, dep.name, dep.priority, dep.duedate)
                 line += self.deps_text(dep, chat, preceed + '│   ')
 
             text += line
@@ -235,6 +242,30 @@ class Operation():
                             Initialization.send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
                     db.session.commit()
 
+    def senddate(self, text, msg, chat):
+        if not msg.isdigit():
+            Initialization.send_message("You must inform the task id", chat)
+        else:
+            task_id = int(msg)
+            self.task = self.handling_exception(msg,task_id,chat)
+            if self.task == 1:
+                return
+
+            if text == '':
+                self.task.duedate = ''
+                Initialization.send_message("You wanted to set task {} senddate, but you didn't provide a date".format(task_id), chat)
+                return
+
+            try:
+                datetime.strptime(text, '%d/%m/%Y')
+            except ValueError:
+                Initialization.send_message("Invalid date - (format: day/mounth/year)", chat)
+                return 1
+
+            self.task.duedate = datetime.strptime(text, '%d/%m/%Y')
+            Initialization.send_message("Task {} date set to {}".format(task_id, text), chat)
+            db.session.commit()
+
     def duplicate(self, msg, chat):
                 if not msg.isdigit():
                     Initialization.send_message("You must inform the task id", chat)
@@ -259,7 +290,6 @@ class Operation():
 
     def list(self, msg, chat):
                 a = ''
-
                 a += '\U0001F4CB Task List\n'
                 query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
                 for self.task in query.all():
@@ -269,7 +299,10 @@ class Operation():
                     elif self.task.status == 'DONE':
                         icon = '\U00002611'
 
-                    a += '[[{}]] {} {} {}\n'.format(self.task.id, icon, self.task.name, self.task.priority)
+                    if self.task.duedate == None:
+                        a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    else:
+                        a += '[[{}]] {} {} *Send Date:* {}\n'.format(self.task.id, self.task.name, self.task.priority, self.task.duedate)
                     a += self.deps_text(self.task, chat)
 
                 Initialization.send_message(a, chat)
@@ -279,15 +312,24 @@ class Operation():
                 query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
                 a += '\n\U0001F195 *TODO*\n'
                 for self.task in query.all():
-                    a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    if self.task.duedate == None:
+                        a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    else:
+                        a += '[[{}]] {} {} *Send Date:* {}\n'.format(self.task.id, self.task.name, self.task.priority, self.task.duedate)
                 query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
                 a += '\n\U000023FA *DOING*\n'
                 for self.task in query.all():
-                    a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    if self.task.duedate == None:
+                        a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    else:
+                        a += '[[{}]] {} {} *Send Date:* {}\n'.format(self.task.id, self.task.name, self.task.priority, self.task.duedate)
                 query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
                 a += '\n\U00002611 *DONE*\n'
                 for self.task in query.all():
-                    a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    if self.task.duedate == None:
+                        a += '[[{}]] {} {}\n'.format(self.task.id, self.task.name, self.task.priority)
+                    else:
+                        a += '[[{}]] {} {} *Send Date:* {}\n'.format(self.task.id, self.task.name, self.task.priority, self.task.duedate)
 
                 Initialization.send_message(a, chat)
                 return
